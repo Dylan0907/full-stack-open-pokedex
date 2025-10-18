@@ -10,14 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
+
       - name: Install dependencies
-        run: npm install
-      - name: Check style
+        run: npm ci
+
+      - name: Lint code
         run: npm run eslint
-      - name: Build
+
+      - name: Build app
         run: npm run build
-      - name: Test
-        run: npm run test
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Trigger Render deploy
+        if: success()
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
